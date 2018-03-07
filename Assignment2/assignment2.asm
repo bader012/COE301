@@ -8,11 +8,12 @@
 ##################################################################################
 
 
-#	$s0 --> rows
-#	$s1 --> cols
+#	$s0 --> NumOfRows
+#	$s1 --> numOfCols
 #	$s2 --> array adress
 #       $s3 --> sum of a raw
 #       $s4 --> sum of a column
+
 .data
 enterNumberOfRows: .asciiz "Enter number of rows: "
 enterNumberOfColumns: .asciiz "Enter number of columns: "
@@ -163,7 +164,10 @@ enterRowElementsLoop:
 	syscall
 	li $v0, 5
 	syscall
-	move $a2, $v0 # row to be summed
+	move $a2, $v0 # index of row to be summed
+	#subi $t8, $s0, 1
+	bge $a2, $s0, error
+	bltz $a2, error 
 	move $a0, $s2 # $a0 = address of array 
  	move $a1, $s1 # $a1 = numberOfColumn
  	jal RSum
@@ -179,6 +183,9 @@ enterRowElementsLoop:
 	li $v0, 5
 	syscall
 	move $a3, $v0 # column to be summed
+	#subi $t9, $s1, 1
+	bge $a3, $s1, error
+	bltz $a3, error 
 	move $a0, $s2 # $a0 = address of array 
  	move $a1, $s0 # $a1 = numberOfRows
  	move $a2, $s1 # $a2 = numberOfColumns
