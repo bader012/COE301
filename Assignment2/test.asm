@@ -28,9 +28,6 @@ msg6: .asciiz "Enter a column number:"
 msg7: .asciiz "Sum of row number "
 msg8: .asciiz "Sum of column number "
 msg9: .asciiz " is: "
-msg10: .asciiz "Array rows sum are:\n"
-msg11: .asciiz "Array columns sum are:\n"
-msg12: .asciiz "invalid choice... "
 array: 
 
 
@@ -118,9 +115,9 @@ enterRowElementsLoop:
 	syscall
 
 	subiu $t0, $v0, 1
-	bltz $t0, error	# if $t0 < 0, go to default 
+	bltz $t0, end	# if $t0 < 0, go to default 
 	li $t1, 5 		# maximum number of cases (0,1)
-	bgt $t0, $t1, error	# if $t0 > $t1, go to default
+	bgt $t0, $t1, end	# if $t0 > $t1, go to default
 
 	la $t2, cases		# Load the address of cases array to $t2
 	sll $t0, $t0, 2		#($t0*4) to calculate the offset of the chosen case in the array
@@ -167,6 +164,21 @@ enterRowElementsLoop:
 	move $a0, $s2 # $a0 = address of array 
  	move $a1, $s1 # $a1 = numberOfColumn
  	jal RSum
+ 	la $a0, msg7
+	li $v0, 4
+	syscall
+	
+	move $a0, $a2
+	li $v0, 1
+	syscall
+	
+	la $a0, msg9
+	li $v0, 4
+	syscall
+	
+	move $a0, $s3
+	li $v0, 1
+	syscall
 	j doWhile
 	
 	
@@ -180,37 +192,44 @@ enterRowElementsLoop:
 	syscall
 	move $a3, $v0 # column to be summed
 	move $a0, $s2 # $a0 = address of array 
- 	move $a1, $s0 # $a1 = numberOfRows
- 	move $a2, $s1 # $a2 = numberOfColumns
+ 	move $a2, $s0 # $a1 = numberOfRows
+ 	move $a1, $s1 # $a2 = numberOfColumns
+ 	
  	jal CSum
+ 	la $a0, msg8
+	li $v0, 4
+	syscall
+	
+	move $a0, $a3
+	li $v0, 1
+	syscall
+	
+	la $a0, msg9
+	li $v0, 4
+	syscall
+	
+	move $a0, $s4
+	li $v0, 1
+	syscall
 	j doWhile
 
 	case3:
-	la $a0, msg10
-	li $v0, 4
-	syscall
 	move $a0, $s2 # $a0 = address of array 
- 	move $a1, $s1 # $a1 = numberOfColumns
- 	move $a2, $s0 # $a2 = numberOfRows
- 	li $t1, 0
+ 	move $a1, $s0 # $a1 = numberOfRows
+ 	move $a2, $s1 # $a2 = numberOfColumns
  	jal ArrayRowSum
 	j doWhile
 
-	case4:
-	la $a0, msg11
-	li $v0, 4
-	syscall
- 	move $a0, $s2 # $a0 = address of array 
- 	move $a1, $s1 # $a1 = numberOfColumns
- 	move $a2, $s0 # $a2 = numberOfRows
- 	li $t1, 0
- 	jal ArrayColSum
-	j doWhile
+case4:
+ li $a0 5
+ li $v0 1
+ syscall
+j doWhile
 
-	# Close the program
-	case5:
-	li $v0, 10
-	syscall
+# Close the program
+case5:
+li $v0, 10
+syscall
 
 
 	# A procedure that receives in $a0 the address of an array,
@@ -260,23 +279,7 @@ enterRowElementsLoop:
 	addi $a1, $a1, -1
 	bnez $a1, RSumHelper
 	
-	la $a0, msg7
-	li $v0, 4
-	syscall
-	
-	move $a0, $a2
-	li $v0, 1
-	syscall
-	
-	la $a0, msg9
-	li $v0, 4
-	syscall
-	
-	move $a0, $t4
-	li $v0, 1
-	syscall
-
-	
+	move $s3, $t4
 	jr $ra
 	
 	
@@ -296,112 +299,35 @@ enterRowElementsLoop:
 	addi $a1, $a1, -1
 	bnez $a1, CSumHelper
 	
-	la $a0, msg8
-	li $v0, 4
-	syscall
-	
-	move $a0, $a3
-	li $v0, 1
-	syscall
-	
-	la $a0, msg9
-	li $v0, 4
-	syscall
-	
-	move $a0, $t4
-	li $v0, 1
-	syscall
-	
-	
+	move $s4, $t4
 	jr $ra
-	
 	
 	# A procedure that receives in $a0 the address of an array,
 	# in $a1 the number of rows, and in $a2 the number of columns, 
 	# and that displays the sums of all rows in the array 
 	# based on using RSum procedure.
 	ArrayRowSum:
-	mul $t0, $a1, $t1
-	add $t0, $t0, $s2
-	li $t4, 0
-	
+	mul $t1, $a1,$a2
+	move $t0, $a0
 	ArrayRowSumHelper:
+	
 	lb $t3, 0($t0)
 	addu $t4, $t4, $t3 
 	addi $t0, $t0, 1
-	addi $a1, $a1, -1
-	bnez $a1, ArrayRowSumHelper
+	addi $t1, $t1, -1
+	bnez $t1,ArrayRowSumHelper
 	
-	la $a0, msg7
-	li $v0, 4
-	syscall
 	
-	move $a0, $t1
-	li $v0, 1
-	syscall
-	
-	la $a0, msg9
-	li $v0, 4
-	syscall
 	
 	move $a0, $t4
 	li $v0, 1
 	syscall
 	
-	li $v0, 4
-	la $a0, newLine
-	syscall
-	
-	addi $t1, $t1, 1
-	move $a1, $s1
-	
-	bne $t1, $a2, ArrayRowSum
-	jr  $ra
-	
-	
-	ArrayColSum:
-	add $t0, $s2, $t1 
-	li $t4, 0 
-	
-	ArrayColSumHelper:
-	lb $t3, 0($t0)
-	addu $t4, $t4, $t3 
-	add $t0, $t0, $s1
-	addi $a2, $a2, -1
-	bnez $a2, ArrayColSumHelper
-	
-	la $a0, msg8
-	li $v0, 4
-	syscall
-	
-	move $a0, $t1
-	li $v0, 1
-	syscall
-	
-	la $a0, msg9
-	li $v0, 4
-	syscall
-	
-	move $a0, $t4
-	li $v0, 1
-	syscall
-	
-	li $v0, 4
-	la $a0, newLine
-	syscall
-	
-	addi $t1, $t1, 1
-	move $a1, $s1
-	move $a2, $s0
-	
-	bne $t1, $a1, ArrayColSum
-	jr  $ra
+	jr $ra
 
-	error:
-	li $v0, 4
-	la $a0, msg12
-	syscall
-	j doWhile
+
+end:
+
 
 
 
