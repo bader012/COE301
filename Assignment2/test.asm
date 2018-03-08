@@ -80,9 +80,7 @@ move $s1, $v0
 	li $t1, 0 #cols counter
 	move $t2, $s2
 enterRowElementsLoop:
-
 	enterColmnsElementsLoop:
-	
 	li $v0, 5
 	syscall
 	
@@ -99,6 +97,8 @@ enterRowElementsLoop:
 	addiu $t0, $t0, 1
 	blt $t0, $s0, enterRowElementsLoop
 	
+
+
 
 
 
@@ -267,19 +267,22 @@ syscall
 	# A procedure that receives in $a0 the address of an array,
 	# in $a1 the number of columns, and in $a2 the index of the row to be summed
 	# and that computes the sum of a given row..
-	RSum:
-	# Compute starting address of the row index
+	
+	
+	RSum: 
+	# $a1 --> the number of cols
+	# $a2 --> the row to be summed
+	# $t0 --> the offset 
+	
 	mul $t0, $a1, $a2
 	add $t0, $t0, $a0
 	li $v0, 0
-	
 	RSumHelper:
-	lb $t3, 0($t0)
-	addu $v0, $v0, $t3 
+	lb $t1, 0($t0)
+	addu $v0, $v0, $t1 
 	addi $t0, $t0, 1
 	addi $a1, $a1, -1
 	bnez $a1, RSumHelper
-	
 	jr $ra
 	
 	
@@ -287,6 +290,10 @@ syscall
 	# in $a1 the number of rows, and in $a2 the number of columns, 
 	# and in $a3 the index of the column to be summed,
 	# and that computes the sum of a given coulmn..
+	
+	
+	
+	
 	CSum:
 	# Compute starting address of the column index
 	add $t0, $a0, $a3 
@@ -306,29 +313,31 @@ syscall
 	# in $a1 the number of rows, and in $a2 the number of columns, 
 	# and that displays the sums of all rows in the array 
 	# based on using RSum procedure.
+	
+	
+	
 	ArrayRowSum:
 	# $a0 --> address
 	# $a1 --> number of rows
 	# $a2 --> number of colums
-	move $t1, $a1
+	# $t3 --> return address ($ra)
+	move $t3, $ra
+	move $t2, $a1
 	move $a1, $a2 
-
 	li $a2, 0
-	add $a2, $a2, $t1
+	subu $sp $sp $t2
 	ArrayRowSumHelper:
 	# $a0 --> address
 	# $a1 --> number of colums
 	# $a2 --> counter
-	move $t4, $ra
-
+	# $t2 --> number of rows
 	jal RSum
-	move $a0, $v0
-	li $v0, 1
-	syscall
-	move $a0 $s2
-	addi $a2, $a2, -1
+	sb $v0 0($sp)
+	addiu $sp $sp 1
+	addi $a2, $a2, 1
 	move $a1,$s1
-	bnez $a2, ArrayRowSumHelper
+	bne $t2,$a2 ArrayRowSumHelper
+	
 	move $ra, $t4
 	jr $ra
 
