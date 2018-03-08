@@ -64,7 +64,7 @@ main: # main program entry
 	
 	
 	#Ask the user to enter RxC matrix of integers 
-	# Printing messgae for reading the array
+	#Printing messgae for reading the array
 	la $a0, msg3a
 	li $v0, 4
 	syscall
@@ -87,8 +87,8 @@ main: # main program entry
 	
 	#reading RxC matrix of integers into an array
 	la $s2, Array
-	mul $t1, $s0, $s1
-	move $t2, $s2
+	mul $t1, $s0, $s1 #number of elements in the array
+	move $t2, $s2 #array address
 	li $t0, 0 #array counter
 	
 	readLoop: 
@@ -96,14 +96,14 @@ main: # main program entry
 	syscall
 	
 	move $t3, $v0
-	sb $t3, 0($t2)
-	addiu $t2, $t2, 1
-	addiu $t0, $t0, 1
-	blt $t0, $t1, readLoop	
+	sb $t3, 0($t2) 
+	addiu $t2, $t2, 1 #increment the address
+	addiu $t0, $t0, 1 #increment the counter
+	blt $t0, $t1, readLoop	# if counter <  number of elements
 	
 	
 	doWhile:
-	#print the menu
+	#print the menu text
 	la $a0, menuText
 	li $v0, 4
 	syscall
@@ -121,7 +121,10 @@ main: # main program entry
 	addu $t2, $t2, $t0	# add the offset to the address of cases array
 	lw $t3, 0($t2)		# load the chosen case’s address to $t3
 	jr $t3			# jump to the chosen case’s address
-
+	
+	
+	
+	#Print the Entered Array:
 	case0:  
 	la $a0, msg4a
 	li $v0, 4
@@ -149,6 +152,9 @@ main: # main program entry
 	jal printA
 	j doWhile
 	
+	
+	
+	#Print Sum of a Row :
 	case1:
 	# Getting index Row 
 	la $a0, msg5
@@ -186,6 +192,11 @@ main: # main program entry
 	syscall
 	j doWhile
 	
+	
+	
+	
+	
+	#Print Sum of a Column:
 	case2:
  	# Getting index Column 
 	la $a0, msg7
@@ -222,6 +233,11 @@ main: # main program entry
 	syscall
 	j doWhile
 
+
+
+
+
+	#Print Rows Sum:
 	case3:
  	move $a0, $s2 # $a0 = address of array 
  	move $a1, $s0 # $a1 = numberOfRows
@@ -229,12 +245,19 @@ main: # main program entry
  	jal ArrayRowSum
 	j doWhile
 
+
+
+
+	#Print Columns Sum:
 	case4:
  	move $a0, $s2 # $a0 = address of array 
  	move $a1, $s0 # $a1 = numberOfRows 
  	move $a2, $s1 # $a2 = numberOfColumns
  	jal ArrayColSum
 	j doWhile
+
+
+
 
 	# Close the program
 	case5:
