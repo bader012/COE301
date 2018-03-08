@@ -461,7 +461,7 @@ main: # main program entry
 	
 	xor $a3, $a3, $a3
 	subu $sp $sp $a2
-	loopCsums:
+	loopCSums:
 	
 	la $a0, msg12
 	li $v0, 4
@@ -489,7 +489,7 @@ main: # main program entry
 	la $a0, newLine
 	syscall
 	
-	bne $a3, $a2, loopCsums
+	bne $a3, $a2, loopCSums
 	
 	move $ra, $t3
 	jr  $ra
