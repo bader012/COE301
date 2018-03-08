@@ -7,7 +7,6 @@
 ####   Assignment : 2                                                         ####
 ##################################################################################
 
-
 #	$s0 --> NumOfRows
 #	$s1 --> numOfCols
 #	$s2 --> array adress
@@ -31,11 +30,14 @@ msg8: .asciiz "Sum of column number "
 msg9: .asciiz " is: "
 msg10: .asciiz "Array rows sum are:\n"
 msg11: .asciiz "Array columns sum are:\n"
-msg12: .asciiz "invalid choice... "
+msg12: .asciiz "number DOSE NOT EXIST... Please re-enter a valid one"
 array: 
 
 
+################# Code segment #####################
 .text
+.globl main
+main: # main program entry
 
 #Ask the user to enter a number of rows
 la $a0, enterNumberOfRows
