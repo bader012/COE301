@@ -1,4 +1,5 @@
 .data 
+errorMsg: .asciiz "Invalid Input!\nPlease enter a base within the range(2 - 16)!\n"
 msg1: .asciiz "Enter the base of the input number: "
 msg2: .asciiz "Enter a number in base " 
 msg3: .asciiz "Enter the base of the output number: "
@@ -6,23 +7,39 @@ msg4: .asciiz "The entered number in base "
 msg5: .asciiz " is: " 
 msg6: .asciiz ": "
 table: .asciiz "0123456789ABCDEF"
-string: 
+enteredNumber:
+ 
+
 
 .text
-
-	reenter:
-	la $a0, msg1
-	li $v0, 4
+	#Input Base
+	inputBaseLoop:
+	li $v0 4
+	la $a0 msg1
 	syscall
 
-	li $v0, 5
+	li $v0 5
 	syscall
-	move $s0, $v0 # input base
-	bgt $s0, 16, reenter
-	blt $s0, 2, reenter
+	move $s0 $v0
+
+	bgt $s0 16 ERORR_INPUT
+	blt $s0 2 ERORR_INPUT 
+	j endInputBaseLoop
+
+
+	ERORR_INPUT:
+	li $v0 4
+	la $a0 errorMsg
+	syscall
+
+	j inputBaseLoop
+
+
+
+	endInputBaseLoop:
 	
 	
-	
+	# number in the input base
 	la $a0, msg2
 	li $v0, 4
 	syscall
@@ -35,35 +52,46 @@ string:
 	li $v0, 4
 	syscall
 
-	la $a0, string  # number in the input base
-	la $a1, 32
+	la $a0, enteredNumber  # number in the input base
+	la $a1, 100
 	li $v0, 8
 	syscall    
 	
 
-	li $t2, 0
-	li $t1, 0 
+	#li $t2, 0
+	
+	
+	
+	li $t1, 0
 	loop:
-
 	lb $t0, 0($a0)
 	beq $t0, 0x0a, endloop 
 	blt $t0, 0x40, minus30
+	
+	# convert from ascii to the given base ( 10 - 15 )
 	jal tolower
-	subi $t0, $t0, 0x51
-	subi $t0, $t0, 6
+	subi $t0, $t0, 0x57 
 	j loop1
+	
+	# convert from ascii to given base ( 0 - 9 )
 	minus30: 
 	subi $t0, $t0, 0x30
+	
 	loop1: 
-	add $a0, $a0, 1
 	sb $t0, 0($sp)
+	add $a0, $a0, 1
 	addi $t1 $t1 1
-	addiu $sp, $sp,1
+	addiu $sp, $sp,-1
 	j loop
 	
 	endloop:
+	
+	
+	
+	
+	
 	li $a0,0
-	subi $sp, $sp,1
+	addi $sp, $sp,1
 	li $t3, 0
 	loop2:
 	lb $t4, 0($sp)
@@ -72,12 +100,13 @@ string:
 	move $a1, $t3
 	jal power
 	mul $t5, $t4, $s4
-	add $t6, $t6, $t5
+	addu $t6, $t6, $t5
 	#######################
-	subiu $sp, $sp, 1
+	addiu $sp, $sp, 1
 	addi $t3, $t3, 1
 	bne $t3, $t1, loop2
 	
+
 	
 	reenter1:
 	la $a0, msg3
@@ -104,17 +133,22 @@ string:
 	li $v0, 4
 	syscall
 	#########################
+	
+	
+	
+	
+	
 	li $t7, 0
 	loop5:
 	divu $t6, $s1
 	mfhi $s5
 	mflo $t6
 	sb $s5, 0($sp)
-	addi $sp, $sp, 1
+	addi $sp, $sp, -1
 	addi $t7, $t7,1
 	bnez $t6, loop5
 
-	subi $sp, $sp, 1
+	addi $sp, $sp, 1
 	loop6: 
 	lb $a0, 0($sp)
 
@@ -128,8 +162,12 @@ string:
 	syscall
 	
 	subi $t7, $t7, 1
-	subi $sp, $sp, 1
+	addi $sp, $sp, 1
 	bnez $t7, loop6
+	
+	
+	
+	
 	
 	
 	#########################
@@ -140,7 +178,7 @@ string:
 	
 	
 	
-tolower:	# $a0 = parameter ch
+tolower:	# $t0 = parameter ch
   blt   $t0, 'A', else	# branch if $a0 < 'A'
   bgt   $t0, 'Z', else	# branch if $a0 > 'Z'
   addi  $t0, $t0, 32	# 'a' – 'A' == 32
