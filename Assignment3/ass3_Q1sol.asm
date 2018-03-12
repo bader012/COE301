@@ -1,3 +1,15 @@
+##################################################################################
+####   Name: Yousef Khalid Majeed                                             ####
+####   Name: Bader Abed Almazmumi                                             ####
+####   ID :  201568070                                                        ####
+####   ID :  201480600                                                        ####
+####   Sec : 01                                                               ####
+####   Assignment : 3                                                         ####
+####   Question : 1                                                           ####
+##################################################################################
+
+
+################# Data segment #####################
 .data
 errorMsg: .asciiz "Invalid Input!\n"
 msg1: .asciiz "Enter the base of the input number: "
@@ -19,7 +31,12 @@ outbutNumber:
 # $s4 --> Dicemal Value.
 #-------------------------------------------
 
+################# Code segment #####################
 .text
+.globl main
+main: # main program entry
+
+
 la $s2 enteredNumber
 la $s3 outbutNumber
 
