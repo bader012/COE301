@@ -59,7 +59,7 @@
 	move $v0, $a0	     # $v0 = a
 	jr $ra
 	Else: 
-	addi $sp, $sp, -4    # frame = 4 bytes
+	addi $sp, $sp, -4    # allocate stack frame = 4 bytes
 	sw $ra, ($sp)	     # save $ra
 	move $t0, $a0	     # $t0 = a
 	move $a0, $a1	     # $a0 = b
