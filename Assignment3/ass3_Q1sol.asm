@@ -11,7 +11,9 @@
 
 ################# Data segment #####################
 .data
-errorMsg: .asciiz "Invalid Input!\n"
+errorMsg: .asciiz "Error! Please enter a valid integer in the range (2 - 16).\n"
+errorInputValueMsg: .asciiz "Error! Please enter a valid integer in the range (0 - "
+errorInputValueMsg_1: .asciiz ").\n"
 msg1: .asciiz "Enter the base of the input number: "
 msg2: .asciiz "Enter a number in base "
 msg3: .asciiz "Enter the base of the output number: "
@@ -19,7 +21,7 @@ msg4: .asciiz "The entered number in base "
 msg4_1: .asciiz " is: "
 table: .asciiz "0123456789ABCDEF"
 
-enteredNumber: .space 32 #Assuming the entered value doesn't excede 32 bytes
+enteredNumber: .space 8 #Assuming the entered value doesn't excede 32 bytes
 outbutNumber:
 
 
@@ -29,14 +31,12 @@ outbutNumber:
 # $s2 --> Address of the array of digits (INPUT).
 # $s3 --> Address of the array of digits (OUTPUT).
 # $s4 --> Dicemal Value.
-# $s5 --> Number of Digits.
 #-------------------------------------------
 
 ################# Code segment #####################
 .text
 .globl main
 main: # main program entry
-
 
 la $s2 enteredNumber
 la $s3 outbutNumber
@@ -49,20 +49,17 @@ syscall
 
 li $v0 5
 syscall
-move $s0 $v0
 
+move $s0 $v0
 bgt $s0 16 ERORR_INPUT
 blt $s0 2 ERORR_INPUT 
 j endInputBaseLoop
-
 
 ERORR_INPUT:
 li $v0 4
 la $a0 errorMsg
 syscall
-
 j inputBaseLoop
-
 
 
 endInputBaseLoop:
@@ -91,10 +88,11 @@ la $a0 enteredNumber
 li $a1 32
 syscall
 
-
+# asciiToDecimal() ----------------------
 move $a0 $s2
-jal asciiToGivenBase
-move $s5 $v0
+move $a1 $s0
+jal asciiToDecimal
+move $s4 $v0
 
 # =======================================================================================
 
@@ -118,9 +116,6 @@ la $a0 errorMsg
 syscall
 j outputBaseLoop
 
-
-
-
 endOutputBaseLoop:
 # =======================================================================================
 
@@ -136,22 +131,21 @@ syscall
 li $v0 4
 la $a0 msg4_1
 syscall
-# =======================================================================================
+# =========================================================================================
 
-
-
-
-move $a0 $s2
-move $a1 $s5
-move $a2 $s0
-jal givenBaseToDecimal
-
-
-move $s4 $v0
+# DecimalTogivenBase() ----------------------
 move $a0 $s1
 move $a1 $s4
 move $a2 $s3
 jal DecimalTogivenBase
+# -------------------------------------------
+# printLoop() -------------------------------
+move $a1 $v0 		
+move $a2 $s3		
+addu $a2 $a2 $a1	
+subi $a2 $a2 1
+jal printLoop
+# -------------------------------------------
 
 
 li $v0, 10
@@ -164,137 +158,74 @@ syscall
 
 
 
-# Converting From Ascii to Given Base ($s0) ============================================
+# Converting From Ascii to Decimal ============================================
 
 # arguments 
 #========================
 # $a0 --> Address of the array of digits (INPUT).
+# $a1 --> Input Base.
 
 # outputs
 #========================
-# $v0 --> Number of Digits.
+# $v0 --> Total Decimal Value.
 
 # variables 
 #========================
 # $t0 --> Count Number of Digits.
 # $t1 --> Hold The Digit.
+# $t2 --> Total Decimal Value.
 
 
-asciiToGivenBase:
-li $t0 0
+asciiToDecimal:
+li $t2 0 # initialize the dicemal value.
 
 whileLoop:
 lb $t1 0($a0)
 beq $t1 0x0a endWhileLoop
-bgt $t1 0x60 charachter
-bgt $t1 0x40 toLower
-
+# to calculate the decimal value: Multiplay the ... bla bla :)
+mul $t2 $t2 $a1
+bgt $t1 0x40 charachter
 number:
 subu $t1 $t1 0x30
 j endIf
-
-toLower:
-addi $t1 $t1 0x20
-
 charachter:
+ori $t1 $t1 0x20
 subu $t1 $t1 0x57
 j endIf
 
 endIf:
+# to calculate the decimal value: Multiplay the ... bla bla :)
+add $t2 $t2 $t1
 bge $t1, $s0,ERORR_enteredNumber 
 sb $t1 0($a0)
-addi $a0 $a0 1
-addiu $t0 $t0 1
 
+addi $a0 $a0 1 #Increament the input adress by one
 j whileLoop
 
 endWhileLoop:
 
-sb $zero 0($a0) # remove the 'a' 
-addi $a0 $a0 -1
-move $v0 $t0
 
+sb $zero 0($a0) # remove the 'a' (new line charachter) 
+move $v0 $t2
 jr $ra
 
 
-
+# if the user entered a n number out of the range ( 0 tp base-1)
 ERORR_enteredNumber:
 li $v0 4
-la $a0 errorMsg
+la $a0 errorInputValueMsg
+syscall
+subi $a0 $s0 1
+li $v0 1
+syscall 
+li $v0 4
+la $a0 errorInputValueMsg_1
 syscall
 j enteredNumberLoop
 
-# =======================================================================================
-
-# Fumction to comvert from given base (r) to decimal (10)
-#for(int i = 0 ; i < s2 ; i++)
-#    for(int j = 0; j<i ; j++){
-#    	t1 = t1 * S0
-#	t4 = t4 + t1
-#    }
-#}
-
-# arguments 
-#========================
-# $a0 --> Address of the array of digits (INPUT).
-# $a1 --> Number of Digits.
-# $a2 --> Input Base.
-
-# outputs
-#========================
-# $v0 --> Decimal Value.
-
-# variables 
-#========================
-# $t0 --> Counter for OuterLoop.
-# $t1 --> Counter for InnerLoop.
-# $t2 --> Hold the digit.
-# $t3 --> Total Decimal Value.
-
-givenBaseToDecimal:
-
-add $a0 $a0 $a1
-addi $a0 $a0 -1
-li $t0 0 # Counter i
-decimalLoop:
-beq $t0 $a1 endDecimalLoop
-lb $t2 0($a0)
-li $t1 0 # Counter j
-	powerLoop:
-	beq $t1 $t0 endPowerLoop
-	mul $t2 $t2 $a2
-	addi $t1 $t1 1
-	j powerLoop
-	endPowerLoop:
-addu $t3 $t3 $t2
-addi $a0 $a0 -1
-addi $t0 $t0 1
-j decimalLoop
-endDecimalLoop:
-move $v0 $t3
-jr $ra
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Fumction to comvert from decimal (10) to any given base (R)
+# Fumction to convert from decimal to any given base:
 
 # arguments 
 #========================
@@ -304,15 +235,10 @@ jr $ra
 
 # output 
 #========================
-# $v0 --> number of digits 
+# $v0 --> number of digits (OUTPUT) 
 
-
-#move $a0 $s1
-#move $a1 $s4
-#move $a2 $s3
 
 DecimalTogivenBase:
-
 li $t0 0 # reminder
 li $t1 0 # count number of digits to print it later
 
@@ -326,14 +252,19 @@ addi $a2 $a2 1
 addi $t1 $t1 1
 bnez $a1 toGivenBaseLoop
 
+move $v0 $t1
+jr $ra
 
 
-# Fumction to print an array of digits
-# arguments ($a1 --> number of digits; $a2 --> Output Address)
-move $a1 $t1 		#$a1 --> number of digits
-move $a2 $s3		#$a2 --> Output Address
-addu $a2 $a2 $a1	#$a2 --> address + number of digits
-subi $a2 $a2 1
+
+
+
+# Fumction to convert from decimal to any given base:
+
+# arguments 
+#========================
+# $a1 --> number of digits
+# $a2 --> Output Address + (Number of digits (OUTPUT)-1)
 
 printLoop: 
 lb $t0, 0($a2)
@@ -350,10 +281,7 @@ addi $a1 $a1 -1
 bnez $a1 printLoop
 
 jr $ra	
-	
 
-	
-#########################
 	
 	
 
