@@ -29,6 +29,7 @@ outbutNumber:
 # $s2 --> Address of the array of digits (INPUT).
 # $s3 --> Address of the array of digits (OUTPUT).
 # $s4 --> Dicemal Value.
+# $s5 --> Number of Digits.
 #-------------------------------------------
 
 ################# Code segment #####################
@@ -90,6 +91,11 @@ la $a0 enteredNumber
 li $a1 32
 syscall
 
+
+move $a0 $s2
+jal asciiToGivenBase
+move $s5 $v0
+
 # =======================================================================================
 
 # Print msg3 ============================================================================
@@ -132,12 +138,11 @@ la $a0 msg4_1
 syscall
 # =======================================================================================
 
-move $a0 $s2
-jal asciiToGivenBase
 
 
+
 move $a0 $s2
-move $a1 $v0
+move $a1 $s5
 move $a2 $s0
 jal givenBaseToDecimal
 
